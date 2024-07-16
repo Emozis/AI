@@ -1,4 +1,4 @@
-# python -m streamlit run main.py
+# python -m streamlit run Home.py
 import streamlit as st 
 from naraetool.style import *
 
