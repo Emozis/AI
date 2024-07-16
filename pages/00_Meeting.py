@@ -1,5 +1,5 @@
 import streamlit as st 
-import pathlib
+from pathlib import Path
 from naraetool.style import *
 
 setting()
