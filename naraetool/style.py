@@ -28,31 +28,31 @@ def read_mdfile(filepath:str) -> str:
 
     return st.markdown(file_text, unsafe_allow_html=True)
 
-def pdf_viewer(filepath:str) -> None:
-    """PDF 뷰어
+# def pdf_viewer(filepath:str) -> None:
+#     """PDF 뷰어
 
-    Args:
-        filepath (str): pdf 파일 경로
-    """
-    file = Path(filepath)
+#     Args:
+#         filepath (str): pdf 파일 경로
+#     """
+#     file = Path(filepath)
     
-    if not file.is_file():
-        file_text = f"[ERROR] 파일 경로를 찾을 수 없습니다.(INPUT PATH: {filepath})"
-        st.markdown(file_text)
-    else:
-        # pdf를 바이너리로 읽기
-        with open(filepath, "rb") as f:
-            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+#     if not file.is_file():
+#         file_text = f"[ERROR] 파일 경로를 찾을 수 없습니다.(INPUT PATH: {filepath})"
+#         st.markdown(file_text)
+#     else:
+#         # pdf를 바이너리로 읽기
+#         with open(filepath, "rb") as f:
+#             base64_pdf = base64.b64encode(f.read()).decode('utf-8')
 
-        # Html로 임베딩하기
-        pdf_display =  f"""
-                        <embed
-                        class="pdfobject"
-                        type="application/pdf"
-                        title="Embedded PDF"
-                        src="data:application/pdf;base64,{base64_pdf}"
-                        style="overflow: auto; width: 100%; height: 100%;">
-                        """
+#         # Html로 임베딩하기
+#         pdf_display =  f"""
+#                         <embed
+#                         class="pdfobject"
+#                         type="application/pdf"
+#                         title="Embedded PDF"
+#                         src="data:application/pdf;base64,{base64_pdf}"
+#                         style="overflow: auto; width: 100%; height: 100%;">
+#                         """
 
-        # 출력
-        st.markdown(pdf_display, unsafe_allow_html=True)
+#         # 출력
+#         st.markdown(pdf_display, unsafe_allow_html=True)

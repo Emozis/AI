@@ -1,13 +1,16 @@
 import streamlit as st 
 from pathlib import Path
 from naraetool.style import *
+from streamlit_pdf_viewer import pdf_viewer
 
 setting()
 
 path = Path("./meeting")
-pdf_list = sorted(path.glob("**/*.pdf"), reverse=True)
+meeting_list = sorted(path.glob("**/*.md"), reverse=True)
 
-for pdf_file in pdf_list:
-    with st.expander(label=pdf_file.name, expanded=False):
-        pdf_viewer(pdf_file)
+isexpand = True
+for meeting in meeting_list:
+    with st.expander(label=meeting.name, expanded=isexpand):
+        read_mdfile(meeting)
+        isexpand = False
 
