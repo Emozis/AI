@@ -1,0 +1,20 @@
+[[pages]]
+path = "Home.py"
+name = "Home"
+icon = ":house:"
+
+[[pages]]
+path = ""
+name = "Example One"
+icon = ":books:"
+
+[[pages]]
+path = ""
+name = "Cool apps"
+icon = ":pig:"
+is_section = true
+
+[[pages]]
+path = "pages/00_Ideas.py"
+name = "Example Four"
+icon = "📖"
