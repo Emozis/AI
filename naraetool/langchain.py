@@ -18,6 +18,30 @@ def check_api_key(api_name:str) -> None:
     if api_name not in os.environ:
         print(f"{api_name} 정보가 없습니다. 확인 후 환경변수에 등록해주세요.")
 
+def make_chain(template):
+    memory = ConversationBufferMemory(
+        return_messages=True,
+        memory_key="chat_history"
+    )
+    runnable = RunnablePassthrough.assign(
+        chat_history = RunnableLambda(memory.load_memory_variables)
+        | itemgetter("chat_history")
+    )
+    prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", template),
+                MessagesPlaceholder(variable_name="chat_history"),
+                ("human", "{input}")
+            ]
+        )
+    model = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest")
+    output_parser = StrOutputParser()
+
+    chain = runnable | prompt | model | output_parser
+
+    return (memory, chain)
+
+# 사용 불가
 class Chat:
     def __init__(self, template, input_vars):
         self.template = template
@@ -84,16 +108,18 @@ class Chat:
 
     def stream_st(self, input, container):
         self.input_vars["input"] = input
+        print(self.input_vars)
         output = ""
         for token in self.chain.stream(self.input_vars):
             output += token
-            container.markdown(output)
+            # container.markdown(output)
+            print(output, end="", flush=True)
 
-        # print(f"BEFORE: {self.memory}")
+        print(f"BEFORE: {self.memory}")
         self.memory.save_context(
             {"inputs": input},
             {"outputs": output}
         )
-        # print(f"AFTER: {self.memory}")
+        print(f"AFTER: {self.memory}")
 
         return output
