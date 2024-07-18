@@ -10,8 +10,8 @@ icon = ""
 is_section = true
 
 [[pages]]
-path = "pages/00_Ideas.py"
-name = "프로젝트 아이디어"
+path = "pages/00_Introduce.py"
+name = "프로젝트 소개"
 icon = "💡"
 in_section = true
 
