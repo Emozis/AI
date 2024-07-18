@@ -7,6 +7,5 @@ setting()
 
 show_pages_from_config()
 
-
 read_mdfile("./docs/readme.md")
     
