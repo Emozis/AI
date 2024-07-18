@@ -1,5 +1,5 @@
 import streamlit as st 
-from naraetool.style import *
+from naraetool.utils import *
 
 setting()
 

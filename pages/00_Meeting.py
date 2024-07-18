@@ -1,6 +1,6 @@
 import streamlit as st 
 from pathlib import Path
-from naraetool.style import *
+from naraetool.utils import *
 from streamlit_pdf_viewer import pdf_viewer
 
 setting()
