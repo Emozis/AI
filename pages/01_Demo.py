@@ -100,7 +100,7 @@ if question:
     with st.chat_message("assistant"):
         container = st.empty()
         answer = ""
-        for token in chain.invoke(question):
+        for token in chain.stream(question):
             answer += token
             container.markdown(answer)
             

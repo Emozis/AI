@@ -25,6 +25,13 @@ st.link_button(
 )
 
 st.link_button(
+    label=":blue[🔗 Figma 바로 가기]",
+    url="https://www.figma.com/design/OWaBrYgkomUUl5DYBudCKi?node-id=0-1",
+    use_container_width=True,
+    # type="primary"
+)
+
+st.link_button(
     label=":blue[🔗 Google Drive 바로 가기]",
     url="https://drive.google.com/drive/folders/1SZaUQ8dmTElSgmZb7Cfk4XAHWrqpHK7y?usp=drive_link",
     use_container_width=True,

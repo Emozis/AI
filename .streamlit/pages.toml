@@ -29,5 +29,10 @@ in_section = true
 
 [[pages]]
 path = "pages/01_Demo.py"
-name = "템플릿 만들기"
+name = "ISFJ와 대화하기"
+icon = "💻"
+
+[[pages]]
+path = "pages/01_Test.py"
+name = "템플릿 만들기(테스트)"
 icon = "💻"
