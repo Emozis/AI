@@ -21,7 +21,7 @@ page_title = "test"
 # Set Seesion Keys
 key_option_btn = f"option_btn_{page_title}"
 key_chat_history = f"chat_history_{page_title}"
-key_chat = f"chat_{page_title}"
+key_chat = f"chain_{page_title}"
 
 # Event Functions
 def expand(state):
@@ -59,10 +59,10 @@ if key_chat_history not in st.session_state:
     st.session_state[key_chat_history] = []
 
 if key_chat in st.session_state:
-    chat = st.session_state[key_chat]
+    chain = st.session_state[key_chat]
 else:
-    chat = Chat(template, input_vars)
-    st.session_state[key_chat] = chat
+    chain = Chat(template, input_vars)
+    st.session_state[key_chat] = chain
     
 #--------------------------------------------------------------------------
 ## Option Container
@@ -121,8 +121,8 @@ with st.expander(label=":gear: Settings", expanded=st.session_state[key_option_b
 
     if submit:
         st.session_state[key_chat_history] = []
-        chat.template = template
-        chat.input_vars = input_vars
+        chain.template = template
+        chain.input_vars = input_vars
 #--------------------------------------------------------------------------
 ## Chatting
 #--------------------------------------------------------------------------
@@ -146,13 +146,13 @@ if question:
 
     with st.chat_message("assistant"):
         container = st.empty()
-        answer = chat.stream_st(question, container)
+        answer = chain.stream_st(question, container)
 
         st.session_state[key_chat_history].append(
             {"role":"assistant", "content":answer}
         )
 
-    print(chat.memory.load_memory_variables({}))
+    print(chain.memory.load_memory_variables({}))
 
 
         
