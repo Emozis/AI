@@ -5,7 +5,9 @@ from streamlit_pdf_viewer import pdf_viewer
 
 setting()
 
-path = Path("./meeting")
+st.title("📚 회의록")
+
+path = Path("./static/meeting")
 meeting_list = sorted(path.glob("**/*.md"), reverse=True)
 
 isexpand = True
