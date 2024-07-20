@@ -25,14 +25,16 @@ in_section = true
 path = "Home.py"
 name = "테스트"
 icon = ""
-in_section = true
+is_section = true
 
 [[pages]]
 path = "pages/01_Demo.py"
 name = "ISFJ와 대화하기"
 icon = "💻"
+in_section = true
 
 [[pages]]
 path = "pages/01_Test.py"
 name = "템플릿 만들기(테스트)"
 icon = "💻"
+in_section = true
