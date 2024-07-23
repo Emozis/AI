@@ -28,6 +28,27 @@ def read_mdfile(filepath:str) -> str:
 
     return st.markdown(file_text, unsafe_allow_html=True)
 
+def side_button(
+        label, 
+        position="right", 
+        ratio=0.1, 
+        type="secondary"
+    ):
+    if position=="right":
+        columns = st.columns(spec=[1-ratio, ratio])
+        container = columns[1]
+    else:
+        columns = st.columns(spec=[ratio, 1-ratio])
+        container = columns[0]
+
+    button = container.button(
+        label=label,
+        use_container_width=True,
+        type=type
+    )
+
+    return button
+
 # def pdf_viewer(filepath:str) -> None:
 #     """PDF 뷰어
 
