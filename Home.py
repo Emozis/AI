@@ -44,7 +44,7 @@ st.link_button(
 
 st.link_button(
     label=":blue[🔗 GitHub 바로 가기]",
-    url="https://github.com/meta-persona-ai",
+    url=f"https://github.com/Emozis",
     use_container_width=True,
     # type="primary"
 )
