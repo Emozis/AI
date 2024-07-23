@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 
 st.set_page_config(layout="wide")
 setting()
-st.title("🔥 프로젝트 진행상황")
+st.header("🔥 프로젝트 진행상황")
 
 # 데이터 불러오기
 table = Table(path="data_frame.json")
