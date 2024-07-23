@@ -43,7 +43,7 @@ class Table:
             ),
             "content": st.column_config.TextColumn(
                 "내용",
-                width="large"
+                width="medium"
             ),
             "status": st.column_config.TextColumn(
                 "진행상황",

@@ -1,11 +1,11 @@
 import streamlit as st 
 from naraetool.utils import *
 from naraetool.table import *
+from st_pages import add_page_title
 from datetime import date, datetime, timedelta
 
-st.set_page_config(layout="wide")
 setting()
-st.header("🔥 프로젝트 진행상황")
+add_page_title()
 
 # 데이터 불러오기
 table = Table(path="data_frame.json")
@@ -64,7 +64,7 @@ with st.expander(label="➕ ADD SCHEDULE", expanded=False):
 del_btn = side_button(
     label="DELETE",
     position="right",
-    ratio=0.1,
+    ratio=0.2,
     type="primary"
 )
 
