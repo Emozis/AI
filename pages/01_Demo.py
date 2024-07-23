@@ -11,42 +11,100 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain.memory import ConversationBufferMemory
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from operator import itemgetter
+#-------------------------------------------------------------------
+# Settings
+#-------------------------------------------------------------------
+key_expander = "isexpanded"
+key_chain = "demo_chain"
+key_memory = "demo_memory"
+key_history = "demo_history"
 
-#--------------------------------------------------------------------------
-## Settings
-#--------------------------------------------------------------------------
-session_key = "chat_history"
+def fold_container():
+    st.session_state[key_expander] = False
 
-def read_isfj(x):
-    isfj_path = Path("./docs/isfj.txt")
-    return isfj_path.read_text(encoding="utf-8")
+if not key_expander in st.session_state:
+    st.session_state[key_expander] = True
 
 template = """\
 # INSTRUCTION
-- 당신의 MBTI는 ISFJ입니다. 
-- 당신의 성격은 PERSONALITY와 같습니다.
-- PERSONALITY에 맞춰 USER에 답변하세요.
+- 당신은 PERSONA를 가진 인물입니다. 
+- 몰입하여 USER에 답변하세요.
 
-# PERSONALITY: {personality}
+# PERSONA: {persona}
 
 # USER: {input}
 """
-#--------------------------------------------------------------------------
-## Load Session Information
-#--------------------------------------------------------------------------
-if session_key not in st.session_state:
-    st.session_state[session_key] = []
+#-------------------------------------------------------------------
+# Header
+#-------------------------------------------------------------------
+with st.expander(
+        label=":gear: Settigns", 
+        expanded=st.session_state[key_expander]
+    ):  
+    # Select Box
+    more_text = "➕ 직접 입력"
+    path = Path("./prompts")
+    files = {file.stem:file for file in sorted(path.iterdir())}
 
-if "chain" in st.session_state:
-    chain = st.session_state["chain"]
-    memory = st.session_state["memory"]
+    select = st.selectbox(
+        label="PROMPT",
+        options=list(files.keys()) + [more_text]
+    )
+    
+    # Print Template
+    if select == more_text:
+        persona = st.text_area(
+            label="TEMPLATE",
+                value="",
+                height=300
+        )
+    else:
+        with open(files[select], 'r', encoding="utf-8") as txt_file:
+            persona = st.text_area(
+                label="TEMPLATE",
+                value=txt_file.read(),
+                height=300,
+                disabled=True
+            )
+        
+
+    # Start Button
+    start_btn = st.button(
+        label="CHAT START",
+        use_container_width=True,
+        type="primary",
+        on_click=fold_container,
+        args=""
+    )
+
+if start_btn:
+    st.session_state[key_history] = []
+    try:
+        del st.session_state[key_chain]
+        del st.session_state[key_memory]
+    except:
+        pass
+
+    st.markdown(f"<b>{select}</b>", unsafe_allow_html=True)
+#-------------------------------------------------------------------
+# Make Chain
+#-------------------------------------------------------------------
+# 채팅을 이어나갈 때
+if key_chain in st.session_state:
+    chain = st.session_state[key_chain]
+    memory = st.session_state[key_memory]
+    history = st.session_state[key_history]
+# 새로운 템플릿을 적용할 때
 else:
-    # Chat 인스턴스 생성
-    # prompt = PromptTemplate.from_template(template)
+    # 초기화 
+    st.session_state[key_history] = []
+
+    # 메모리 설정
     memory = ConversationBufferMemory(
         return_messages=True, 
         memory_key="chat_history"
     )
+    # 프롬프트 설정
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", template),
@@ -54,62 +112,69 @@ else:
             ("human", "{input}"),
         ]
     )
+    # 체인 만들기
     runnable = RunnablePassthrough.assign(
         chat_history = RunnableLambda(memory.load_memory_variables)
         | itemgetter("chat_history")
     )
     model = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
     output_parser = StrOutputParser()
-    runnable1 = {"input": RunnablePassthrough()}
-    runnable2 = RunnablePassthrough.assign(
-            chat_history=RunnableLambda(memory.load_memory_variables) | itemgetter("chat_history"),
-            personality=RunnableLambda(read_isfj)
+    runnable = RunnablePassthrough.assign(
+            chat_history=RunnableLambda(memory.load_memory_variables) | itemgetter("chat_history")
         )
-    runnable = runnable1 | runnable2
     chain = runnable | prompt | model | StrOutputParser()
-    st.session_state["chain"] = chain
-    st.session_state["memory"] = memory
-
-#--------------------------------------------------------------------------
-## Header & Body
-#--------------------------------------------------------------------------
+    # 세션 정보 저장
+    st.session_state[key_chain] = chain
+    st.session_state[key_memory] = memory
+#-------------------------------------------------------------------
+# Chat Messages
+#-------------------------------------------------------------------
 # 첫 채팅을 시작할 때 첫 인사 출력
-if len(st.session_state[session_key]) == 0:
-    greeting = "안녕하세요. 제 MBTI는 ISFJ입니다.😊"
+if len(st.session_state[key_history]) == 0:
+    greeting = "안녕하세요😋"
     st.chat_message("assistant").markdown(greeting)
-    st.session_state[session_key].append(
-        {"role":"assistant", "content":greeting}
+    st.session_state[key_history].append(
+        {"role":"assistant", "content": greeting}
     )
-
 # 채팅 기록이 있을 때 기록된 채팅 출력
 else:
-    for chat in st.session_state[session_key]:
+    for chat in st.session_state[key_history]:
         st.chat_message(chat["role"]).markdown(chat["content"])
 
-question = st.chat_input(placeholder="메세지 입력")
+# 채팅창 입력
+question = st.chat_input(placeholder="메세지를 입력하세요")
 
-# 채팅이 입력되었을 때
 if question:
     # 입력된 채팅 출력
     st.chat_message("user").markdown(question)
-    st.session_state[session_key].append(
+    st.session_state[key_history].append(
         {"role":"user", "content":question}
     )
-    
     # 답변 출력
-    with st.chat_message("assistant"):
-        container = st.empty()
-        answer = ""
-        for token in chain.stream(question):
-            answer += token
-            container.markdown(answer)
-            
-    st.session_state[session_key].append({"role":"assistant", "content":answer})
+    try:
+        with st.chat_message("assistant"):
+            container = st.empty()
+            answer = ""
+            inputs = {
+                "input": question,
+                "persona": persona
+            }
+            for token in chain.stream(inputs):
+                answer += token
+                container.markdown(answer)
+    except Exception as e:
+        print(e)
+        container.markdown("통신이 좋지 않습니다. 잠시만 기다려주세요.😅")
+    
+    st.session_state[key_history].append(
+        {"role":"assistant", "content":answer}
+    )
     # 메모리 저장
     memory.save_context(
         {"inputs": question},
         {"output": answer}
     )
 
-	# 메모리 출력
-    print(memory.load_memory_variables({}))
+    # 메모리 출력
+    # print(memory.load_memory_variables({}))
+
