@@ -70,6 +70,7 @@ class Table:
             selection_mode="multi-row",
             use_container_width=True,
             hide_index=True,
+            height=2000,
             column_config=self.column_config
         )
 
