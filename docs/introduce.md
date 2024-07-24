@@ -62,7 +62,7 @@ Emozis는 “emotion”과 “emoji”의 결합에 ‘s’를 추가하여 복�
             <a href="https://github.com/MinkyoDev"><img src="https://avatars.githubusercontent.com/MinkyoDev" width="90px"></a>
         </td>
         <td align="center" width="100px;">
-            <a href="https://github.com/MinkyoDev"><img src="https://avatars.githubusercontent.com/MinkyoDev" width="90px"></a>
+            <a href="https://github.com/cocopg"><img src="https://avatars.githubusercontent.com/cocopg" width="90px"></a>
         </td>
     </tr>
     <tr>
@@ -70,7 +70,7 @@ Emozis는 “emotion”과 “emoji”의 결합에 ‘s’를 추가하여 복�
         <td align="center"><a href="https://github.com/narae3759"><b>김나래</b></a> </td>
         <td align="center"><a href="https://github.com/yechan-9208"><b>원예찬</b></a> </td>
         <td align="center"><a href="https://github.com/MinkyoDev"><b>정민교</b></a> </td>
-        <td align="center"><a href=""><b>정성진</b></a> </td>
+        <td align="center"><a href="https://github.com/cocopg"><b>정성진</b></a> </td>
     </tr>
     <tr>
         <td align="center">PM<br>AI Engineer</td>
