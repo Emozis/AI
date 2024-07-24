@@ -2,83 +2,101 @@ import streamlit as st
 import pandas as pd 
 from datetime import date, datetime 
 
-default_frame = pd.DataFrame(
-    {
-        "category": pd.Series(["전체"], dtype='str'),
-        "start_date": pd.Series(["2024/07/17"], dtype='datetime64[ns]'),
-        "end_date": pd.Series(["2024/07/17"], dtype='datetime64[ns]'),
-        "content": pd.Series(["내용을 입력하세요"], dtype='str'),
-        "status": pd.Series(["🔴 예정"], dtype='str')
-    }
-)
 
-def load_data(path="./data_frame.json"):
-    data = pd.read_json(path, orient="records")
-    if data.shape[0] == 0:
-        data = default_frame
-    else:
-        data["start_date"] = pd.to_datetime(data["start_date"])
-        data["end_date"] = pd.to_datetime(data["end_date"])
+def make_dataframe(
+        category:str="-",
+        start_date:datetime="1999/12/31",
+        end_date:datetime="1999/12/31",
+        content:str="-",
+        status:str="-"
+    ) -> pd.DataFrame:
+    dataframe = pd.DataFrame(
+        {
+            "category": pd.Series([category], dtype='str'),
+            "start_date": pd.Series([start_date], dtype='datetime64[ns]'),
+            "end_date": pd.Series([end_date], dtype='datetime64[ns]'),
+            "content": pd.Series([content], dtype='str'),
+            "status": pd.Series([status], dtype='str')
+        }
+    )
 
-    return data 
+    return dataframe
 
-
-class DataTable:
-    def __init__(self, data):
-        self.data = data 
+class Table:
+    def __init__(self, path="data.json"):
+        self.path = path
+        self.data = self._load_data()
         self.column_config = {
-            "category": st.column_config.SelectboxColumn(
+            "category": st.column_config.TextColumn(
                 "분류",
-                width="small",
-                options=[
-                    "공통","AI","디자인","백엔드","프론트엔드","통신"
-                ],
-                required=True
+                width="small"
             ),
             "start_date": st.column_config.DateColumn(
                 "시작 일시",
                 width="small",
-                default=datetime.now().date(),
-                min_value=date(2024, 1, 1),
-                max_value=date(2050, 12, 31),
                 format="YYYY/MM/DD"
             ),
             "end_date": st.column_config.DateColumn(
                 "종료 일시",
                 width="small",
-                default=datetime.now().date(),
-                min_value=date(2024, 1, 1),
-                max_value=date(2050, 12, 31),
                 format="YYYY/MM/DD"
             ),
             "content": st.column_config.TextColumn(
                 "내용",
-                width="medium",
-                help="Streamlit **widget** commands 🎈",
-                default="입력",
+                width="medium"
             ),
-            "status": st.column_config.SelectboxColumn(
+            "status": st.column_config.TextColumn(
                 "진행상황",
-                width="small",
-                options=[
-                    "🔴 예정","🟢 진행중","🔵 완료"
-                ],
-                required=True
-            ),
+                width="small"
+            )
         }
-        
-    def insert_table(self, column):
-        if column == "전체":
-            data = self.data.sort_values(by=["category"])
-        else:
-            data = self.data[self.data["category"]==column]
 
-        table = st.data_editor(
-            data.reset_index(drop=True),
-            hide_index=True,
-            num_rows="dynamic",
+    def _load_data(self):
+        data = pd.read_json(self.path, orient="records")
+        if data.shape[0] == 0:
+            columns = ["category", "start_date", "end_date", "content", "status"]
+            return pd.DataFrame(columns=columns)
+        else:
+            data["start_date"] = pd.to_datetime(data["start_date"])
+            data["end_date"] = pd.to_datetime(data["end_date"])
+
+        return data 
+    
+    def viewer(self):
+        data_viewer = st.dataframe(
+            data=self.data,
+            key="data",
+            on_select="rerun",
+            selection_mode="multi-row",
             use_container_width=True,
+            hide_index=True,
+            height=2000,
             column_config=self.column_config
         )
 
-        return table
+        return data_viewer
+
+    def add_data(self, new_data):
+        self.data = pd.concat([self.data, new_data])
+        self.data = self.data.sort_values(by=["category","start_date"])
+        self.save_data()
+
+    def del_data(self, del_idx):
+        self.data = self.data.drop(index=del_idx)
+        self.save_data()
+
+    def save_data(self):
+        self.data.to_json(
+            self.path, 
+            orient="records", 
+            date_format="iso", 
+            indent=4, 
+            index=False,
+            force_ascii=False
+        )
+
+   
+        
+
+
+
