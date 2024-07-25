@@ -27,15 +27,6 @@ def fold_container():
 if not key_expander in st.session_state:
     st.session_state[key_expander] = True
 
-template = """\
-# INSTRUCTION
-- 당신은 PERSONA를 가진 인물입니다. 
-- 몰입하여 USER에 답변하세요.
-
-# PERSONA: {persona}
-
-# USER: {input}
-"""
 #-------------------------------------------------------------------
 # Header
 #-------------------------------------------------------------------
@@ -45,7 +36,7 @@ with st.expander(
     ):  
     # Select Box
     more_text = "➕ 직접 입력"
-    path = Path("./prompts")
+    path = Path("static/prompts")
     files = {file.stem:file for file in sorted(path.iterdir())}
 
     select = st.selectbox(
@@ -107,6 +98,7 @@ else:
         memory_key="chat_history"
     )
     # 프롬프트 설정
+    template = read_prompt("static/templates")
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", template),
@@ -161,6 +153,7 @@ if question:
             "persona": persona
         }
         retry = 0
+        # API 전송 오류 시 자동 재시도
         while retry < 5:
             try:
                 for token in chain.stream(inputs):
