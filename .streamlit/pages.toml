@@ -38,24 +38,3 @@ path = "pages/01_Demo.py"
 name = "테스트 대화"
 icon = "💻"
 in_section = true
-<<<<<<< HEAD
-=======
-
-[[pages]]
-path = "pages/01_Test.py"
-name = "템플릿 만들기(테스트)"
-icon = "💻"
-in_section = true
-
-[[pages]]
-path = "pages/01_Test.py"
-name = "템플릿 만들기(테스트)"
-icon = "💻"
-in_section = true
-
-[[pages]]
-path = "pages/01_Test.py"
-name = "템플릿 만들기(테스트)"
-icon = "💻"
-in_section = true
->>>>>>> 5c57541 (docs)
