@@ -126,7 +126,7 @@ else:
         chat_history = RunnableLambda(memory.load_memory_variables)
         | itemgetter("chat_history")
     )
-    model = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+    model = ChatGoogleGenerativeAI(model="gemini-1.5-pro")
     output_parser = StrOutputParser()
     runnable = RunnablePassthrough.assign(
             chat_history=RunnableLambda(memory.load_memory_variables) | itemgetter("chat_history")
@@ -140,7 +140,7 @@ else:
 #-------------------------------------------------------------------
 # 첫 채팅을 시작할 때 첫 인사 출력
 if len(st.session_state[key_history]) == 0:
-    greeting = "안녕하세요😋"
+    greeting = "너가 감히 나랑 대화를 하려고 해?👩🏻‍🦳ྀི"
     st.chat_message("assistant").markdown(greeting)
     st.session_state[key_history].append(
         {"role":"assistant", "content": greeting}

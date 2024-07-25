@@ -64,7 +64,7 @@ else:
     runnable1 = {"input": RunnablePassthrough()}
     runnable2 = RunnablePassthrough.assign(
             chat_history=RunnableLambda(memory.load_memory_variables) | itemgetter("chat_history"),
-            personality=RunnableLambda(read_isfj)
+            personality=RunnableLambda(read_insideout)
         )
     runnable = runnable1 | runnable2
     chain = runnable | prompt | model | StrOutputParser()
@@ -76,7 +76,7 @@ else:
 #--------------------------------------------------------------------------
 # 첫 채팅을 시작할 때 첫 인사 출력
 if len(st.session_state[session_key]) == 0:
-    greeting = "안녕하세요. 제 MBTI는 ISFJ입니다.😊"
+    greeting = "안녕!! 오늘은 기분이 어때?.😊"
     st.chat_message("assistant").markdown(greeting)
     st.session_state[session_key].append(
         {"role":"assistant", "content":greeting}
