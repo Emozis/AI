@@ -52,7 +52,10 @@ add_btn = st.button(
 # Input Box
 with st.expander(label="🔧 EDIT SCHEDULE", expanded=st.session_state["is_expand"]):
     # Input box 생성
-    output_data = input_box(st.session_state["input_data"])
+    try:
+        output_data = input_box(st.session_state["input_data"])
+    except:
+        pass
     
     # 버튼 생성
     columns = st.columns([0.25,0.2,0.1,0.2,0.25])
