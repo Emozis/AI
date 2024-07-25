@@ -38,3 +38,4 @@ path = "pages/01_Demo.py"
 name = "테스트 대화"
 icon = "💻"
 in_section = true
+
