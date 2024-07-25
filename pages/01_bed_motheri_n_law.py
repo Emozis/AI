@@ -11,6 +11,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain.memory import ConversationBufferMemory
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 from operator import itemgetter
+
+from google.api_core import exceptions
 #-------------------------------------------------------------------
 # Settings
 #-------------------------------------------------------------------
@@ -160,20 +162,23 @@ if question:
         {"role":"user", "content":question}
     )
     # 답변 출력
-    try:
-        with st.chat_message("assistant"):
-            container = st.empty()
-            answer = ""
-            inputs = {
-                "input": question,
-                "persona": persona
-            }
-            for token in chain.stream(inputs):
-                answer += token
-                container.markdown(answer)
-    except Exception as e:
-        print(e)
-        container.markdown("통신이 좋지 않습니다. 잠시만 기다려주세요.😅")
+    with st.chat_message("assistant"):
+        container = st.empty()
+        answer = ""
+        inputs = {
+            "input": question,
+            "persona": persona
+        }
+        retry = 0
+        while retry < 5:
+            try:
+                for token in chain.stream(inputs):
+                    answer += token
+                    container.markdown(answer)
+                break
+            except exceptions.ServiceUnavailable as e:
+                retry += 1
+                continue
     
     st.session_state[key_history].append(
         {"role":"assistant", "content":answer}
