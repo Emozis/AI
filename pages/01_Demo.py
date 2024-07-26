@@ -111,7 +111,7 @@ else:
         chat_history = RunnableLambda(memory.load_memory_variables)
         | itemgetter("chat_history")
     )
-    model = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+    model = ChatGoogleGenerativeAI(model="gemini-1.5-pro")
     output_parser = StrOutputParser()
     runnable = RunnablePassthrough.assign(
             chat_history=RunnableLambda(memory.load_memory_variables) | itemgetter("chat_history")
