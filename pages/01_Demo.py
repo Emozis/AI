@@ -36,7 +36,7 @@ with st.expander(
     ):  
     # Select Box
     more_text = "➕ 직접 입력"
-    path = Path("static/prompts")
+    path = Path("./static/prompts")
     files = {file.stem:file for file in sorted(path.iterdir())}
 
     select = st.selectbox(
@@ -98,7 +98,7 @@ else:
         memory_key="chat_history"
     )
     # 프롬프트 설정
-    template = read_prompt("static/templates")
+    template = read_prompt("./static/templates/Demo.prompt")
     prompt = ChatPromptTemplate.from_messages(
         [
             ("system", template),
@@ -152,6 +152,7 @@ if question:
             "input": question,
             "persona": persona
         }
+        print(chain)
         retry = 0
         # API 전송 오류 시 자동 재시도
         while retry < 5:
