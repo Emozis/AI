@@ -1,11 +1,10 @@
 import os 
 from dotenv import load_dotenv 
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import AIMessage,HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain.memory import ConversationBufferMemory
-from langchain_core.runnables import RunnableLambda, RunnablePassthrough
-from operator import itemgetter
 
 def check_api_key(api_name:str) -> None:
     """환경변수에 API가 있는지 확인하는 함수
@@ -18,108 +17,128 @@ def check_api_key(api_name:str) -> None:
     if api_name not in os.environ:
         print(f"{api_name} 정보가 없습니다. 확인 후 환경변수에 등록해주세요.")
 
-def make_chain(template):
-    memory = ConversationBufferMemory(
-        return_messages=True,
-        memory_key="chat_history"
-    )
-    runnable = RunnablePassthrough.assign(
-        chat_history = RunnableLambda(memory.load_memory_variables)
-        | itemgetter("chat_history")
-    )
-    prompt = ChatPromptTemplate.from_messages(
+async def simple_chat(input):
+    prompt = PromptTemplate.from_template("{input}에 대해 한국어로 5줄로 설명해줘")
+    model = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+    output_parser = StrOutputParser()
+    chain = prompt | model | output_parser
+
+    output = chain.astream({"input": input})
+    async for s in output:
+        print(s, end="", flush=True)
+
+class GeminiChain:
+    def __init__(
+        self,
+        user_info=None,
+        character_info=None,
+        chat_logs=None
+    ) -> None:
+        
+        # 입력값에 대한 변수
+        self.inputs = self._get_inputs(user_info, character_info, chat_logs)
+        self.memory = ConversationBufferMemory(
+            return_messages=True, 
+            memory_key="chat_history"
+        )
+
+        # 체인에 대한 변수
+        self.template_path = "./static/templates/Demo.prompt"
+        self.model_name = "gemini-1.5-pro"
+        self.temperature = 0.7
+        self.chain = self._make_chain()
+
+    def _get_inputs(self, user_info, character_info, chat_logs):
+        inputs = {
+            "user_info": user_info,
+            "character_info" : character_info,
+            "chat_history": self._get_chat_logs(chat_logs)
+        }
+
+        return inputs
+
+    def _get_chat_logs(self, chat_logs):
+        if not chat_logs:
+            return []
+
+        chat_history = []
+        for log in chat_logs:
+            if log["role"] == "user":
+                chat = HumanMessage(log["contents"])
+            else:
+                chat = AIMessage(log["contents"])
+            
+        return chat_history.append(chat)
+    
+    @staticmethod
+    def read_prompt(filepath:str) -> str:
+        """프롬프트 파일을 읽고 텍스트로 반환하는 함수
+
+        Args:
+            filepath (str): markdown 파일 경로
+
+        Returns:
+            str: markdown 파일에서 추출된 텍스트
+        """
+        file = Path(filepath)
+        
+        if not file.is_file():
+            file_text = f"[ERROR] 파일 경로를 찾을 수 없습니다.(INPUT PATH: {filepath})"
+        else:
+            file_text = file.read_text(encoding="utf-8")
+
+        return file_text
+    
+    def _get_prompts(self):
+        # 프롬프트 설정
+        template = self.read_prompt(self.template_path)
+        prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", template),
                 MessagesPlaceholder(variable_name="chat_history"),
-                ("human", "{input}")
-            ]
-        )
-    model = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest")
-    output_parser = StrOutputParser()
-
-    chain = runnable | prompt | model | output_parser
-
-    return (memory, chain)
-
-# 사용 불가
-class Chat:
-    def __init__(self, template, input_vars):
-        self.template = template
-        self.input_vars = input_vars
-        self.memory = ConversationBufferMemory(
-            return_messages=True,
-            memory_key="chat_history"
-        )
-        self.chain = self._make_chain()
-        
-    def _get_runnable(self):
-        runnable = RunnablePassthrough.assign(
-            chat_history = RunnableLambda(self.memory.load_memory_variables)
-            | itemgetter("chat_history")
-        )
-        return runnable
-
-    def _get_prompt(self):
-        self.prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", self.template),
-                MessagesPlaceholder(variable_name="chat_history"),
-                ("human", "{input}")
+                ("human", "{input}"),
             ]
         )
 
-        return self.prompt
-
+        return prompt
+    
     def _make_chain(self):
-        runnable = self._get_runnable()
-        prompt = self._get_prompt()
-        model = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
+        # 프롬프트 설정
+        prompt = self._get_prompts()
+
+        # 모델 설정
+        model = ChatGoogleGenerativeAI(
+            model=self.model_name,
+            temperature=self.temperature
+        )
+
+        # 출력 파서 설정
         output_parser = StrOutputParser()
 
-        self.chain = runnable | prompt | model | output_parser 
+        # 체인 만들기
+        chain = prompt | model | output_parser
 
-        return self.chain
-    
-    def invoke(self, input):
-        self.input_vars["input"] = input
-        output = self.chain.invoke(self.input_vars)
+        return chain
 
-        # print(f"BEFORE: {self.memory}")
-        self.memory.save_context(
+    def _save_memory(self, input, output):
+            self.memory.save_context(
             {"inputs": input},
-            {"outputs": output}
+            {"output": output}
         )
-        # print(f"AFTER: {self.memory}")
 
-        return output
-    
-    def stream(self, input):
-        self.input_vars["input"] = input
-        output = self.chain.stream(self.input_vars)
-        
-        # print(f"BEFORE: {self.memory}")
-        self.memory.save_context(
-            {"inputs": input},
-            {"outputs": output}
-        )
-        # print(f"AFTER: {self.memory}")
+    async def astream(self, input):
+        self.inputs["input"] = input
 
-        return output
-
-    def stream_st(self, input, container):
-        self.input_vars["input"] = input
-        print(self.input_vars)
         output = ""
-        for token in self.chain.stream(self.input_vars):
-            output += token
-            # container.markdown(output)
-            print(output, end="", flush=True)
-
-        print(f"BEFORE: {self.memory}")
-        self.memory.save_context(
-            {"inputs": input},
-            {"outputs": output}
-        )
-        print(f"AFTER: {self.memory}")
-
+        result = self.chain.astream(self.inputs)
+        async for token in result:
+            output += token 
+            # 소켓 통신 코드 
+            # 테스트 코드
+            print(token, end="", flush=True)
+        
+        # 메모리에 저장
+        self._save_memory(input, output)
+        
         return output
+        
