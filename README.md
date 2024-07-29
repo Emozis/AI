@@ -43,7 +43,7 @@ AI 모듈은 API 형태로 제공되며, 프론트엔드 및 백엔드 시스템
 ### Tools & Technologies
 
 - **Google Drive**: 문서화 및 팀 협업
-- **Dscode**: 팀 커뮤니케이션
+- **Dscord**: 팀 커뮤니케이션
 - **Kakao Talk**: 팀 커뮤니케이션
 
 ### Key Milestones
@@ -61,5 +61,5 @@ PM은 팀 구성원들과 정기적으로 회의를 통해 프로젝트 진행 �
 
 프로젝트와 관련된 문의 사항이나 제안이 있으시면 아래 이메일로 연락해 주세요:
 
-- **AI 개발**: ⭐️김나래(narea3759@gmil.com), 오태훈(travelcheck2019@gmail.com)
-- **프로젝트 관리**: ⭐️오태훈(travelcheck2019@gmail.com), 김나래(narea3759@gmil.com)
+- **AI 개발**: ⭐️김나래(narea3759@gmail.com), 오태훈(travelcheck2019@gmail.com)
+- **프로젝트 관리**: ⭐️오태훈(travelcheck2019@gmail.com), 김나래(narea3759@gmail.com)
