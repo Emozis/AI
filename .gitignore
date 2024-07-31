@@ -178,3 +178,5 @@ pyrightconfig.json
 ############################
 # Custom
 ############################
+.obsidian
+.DS_Store
