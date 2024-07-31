@@ -43,7 +43,7 @@ AI 모듈은 API 형태로 제공되며, 프론트엔드 및 백엔드 시스템
 ### Tools & Technologies
 
 - **Google Drive**: 문서화 및 팀 협업
-- **Dscord**: 팀 커뮤니케이션
+- **Discord**: 팀 커뮤니케이션
 - **Kakao Talk**: 팀 커뮤니케이션
 
 ### Key Milestones
