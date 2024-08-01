@@ -34,7 +34,7 @@ icon = ""
 is_section = true
 
 [[pages]]
-path = "pages/01_Demo.py"
+path = "pages/01_Demo_test.py"
 name = "테스트 대화"
 icon = "💻"
 in_section = true
