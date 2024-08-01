@@ -5,7 +5,6 @@ from .langchain import check_api_key
 import base64
 
 def setting():
-    os.environ["LANGCHAIN_PROJECT"] = "GEMINI_PROJECT"
     check_api_key("GOOGLE_API_KEY")
     read_mdfile("./docs/css.md")
 
