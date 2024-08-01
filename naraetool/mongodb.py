@@ -1,13 +1,22 @@
 import os
+import json
+from pathlib import Path
 from pymongo import MongoClient
 from naraetool.main_logger import logger 
 from naraetool.config import config
 from urllib.parse import quote_plus
+from bson import ObjectId
 
+# 사용자 정의 JSON 인코더 클래스
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        return super(JSONEncoder, self).default(obj)
 
 class MongoDB:
     def __init__(self, config):
-        self.save_path = "./data/mongodb_backup.json"
+        self.save_path = Path(__file__).parents[1] / "data/mongodb_backup.json"
 
         # 기본 설정값
         host = config["host"]
@@ -61,29 +70,36 @@ class MongoDB:
         return data
     
     def _backup(self):
-        self.documents.to_json(
-            self.save_path, 
-            orient="records", 
-            date_format="iso", 
-            indent=4, 
-            index=False,
-            force_ascii=False
-        )
+        with open(self.save_path, "w", encoding="utf-8") as json_file:
+            json.dump(self.documents, json_file, cls=JSONEncoder, ensure_ascii=False, indent=4)
 
     def create(self, document):
         self.collection.insert_one(document)
         self._backup()
 
-    def update(self, query, new_doc):
-        self.collection.update_one(
+        logger.debug(f"➕ Create Document: {document}")
+
+    def update(self, query, new_document):
+        result = self.collection.update_one(
             query, 
-            {"$set": new_doc}
+            {"$set": new_document}
         )
-        self._backup()
+        
+        if result.matched_count > 0:
+            logger.debug(f"✔️ Update Document: {new_document}")
+            self._backup()
+        else:
+            logger.warning("🚨 Update failed due to no matching documents")
 
     def delete(self, document):
-        self.collection.delete_one(document)
-        self._backup()
+        result = self.collection.delete_one(document)
+
+        if result.deleted_count > 0:
+            logger.debug(f"➖ Delete Document: {document}")
+            self._backup()
+        else:
+            logger.warning("🚨 Delete failed due to no matching documents")
+
         
 
 mongo = MongoDB(config.mongodb)
