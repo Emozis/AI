@@ -1,77 +1,86 @@
 import os 
-from dotenv import load_dotenv 
+import asyncio
+import requests
+import json
+from pathlib import Path 
+from naraetool.logger import logger
+
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import AIMessage,HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain.memory import ConversationBufferMemory
 
-def check_api_key(api_name:str) -> None:
-    """환경변수에 API가 있는지 확인하는 함수
+# 사용 안함
+# def check_api_key(api_name:str) -> None:
+#     """환경변수에 API가 있는지 확인하는 함수
 
-    Args:
-        api_name (str): 확인할 API KEY의 key 값
-    """
-    load_dotenv()
+#     Args:
+#         api_name (str): 확인할 API KEY의 key 값
+#     """
+#     load_dotenv()
 
-    if api_name not in os.environ:
-        print(f"{api_name} 정보가 없습니다. 확인 후 환경변수에 등록해주세요.")
+#     if api_name not in os.environ:
+#         print(f"{api_name} 정보가 없습니다. 확인 후 환경변수에 등록해주세요.")
 
-async def simple_chat(input):
-    prompt = PromptTemplate.from_template("{input}에 대해 한국어로 5줄로 설명해줘")
-    model = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
-    output_parser = StrOutputParser()
-    chain = prompt | model | output_parser
-
-    output = chain.astream({"input": input})
-    async for s in output:
-        print(s, end="", flush=True)
-
-class GeminiChain:
-    def __init__(
-        self,
-        user_info=None,
-        character_info=None,
-        chat_logs=None
-    ) -> None:
-        
-        # 입력값에 대한 변수
-        self.inputs = self._get_inputs(user_info, character_info, chat_logs)
-        self.memory = ConversationBufferMemory(
-            return_messages=True, 
-            memory_key="chat_history"
-        )
-
-        # 체인에 대한 변수
-        self.template_path = "./static/templates/Demo.prompt"
-        self.model_name = "gemini-1.5-pro"
-        self.temperature = 0.7
-        self.chain = self._make_chain()
-
-    def _get_inputs(self, user_info, character_info, chat_logs):
-        inputs = {
-            "user_info": user_info,
-            "character_info" : character_info,
-            "chat_history": self._get_chat_logs(chat_logs)
+def validate_google_api_key():
+    """Google API Key 유효성 검사하는 함수"""
+    key_name = "GOOGLE_API_KEY"
+    if key_name not in os.environ:
+        return f"{key_name} 정보가 없습니다. 환경변수를 확인해주세요."
+    
+    result = requests.post(
+        url= "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
+        data=b'{"contents":[{"parts":[{"text":""}]}]}',
+        headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": os.getenv(key_name)
         }
+    )
 
-        return inputs
+    if result.status_code != 200:
+        logger.debug(json.loads(result.content))
+    
+    logger.info("Google API Key validation succeeded.")
 
-    def _get_chat_logs(self, chat_logs):
-        if not chat_logs:
+
+
+class Gemini:
+    def __init__(self, input_vars):
+        self.input_vars = input_vars
+        self._transform()
+        
+        self.template_path="./static/templates/Demo_test.prompt"
+        self.model_name = "gemini-1.5-flash"
+        self.temperature = 0.7
+
+        self.chain = self._create_chain()
+
+    @staticmethod
+    def wrap_messages(chat_history):
+        """chat_history에 Message 객체 씌우는 메서드"""
+        if not chat_history:
             return []
 
-        chat_history = []
-        for log in chat_logs:
+        chat_messages = []
+        for log in chat_history:
             if log["role"] == "user":
-                chat = HumanMessage(log["contents"])
+                chat = HumanMessage(log["content"])
             else:
-                chat = AIMessage(log["contents"])
+                chat = AIMessage(log["content"])
             
-        return chat_history.append(chat)
-    
+            chat_messages.append(chat)
+        
+        return chat_messages
+
+    def _transform(self):
+        """input_vars 를 변환하는 메서드"""
+        # history Message 객체 씌우기
+        history = self.input_vars["chat_history"]
+        self.input_vars["chat_history"] = self.wrap_messages(history)
+
     @staticmethod
-    def read_prompt(filepath:str) -> str:
+    def read_template(filepath:str) -> str:
         """프롬프트 파일을 읽고 텍스트로 반환하는 함수
 
         Args:
@@ -82,16 +91,25 @@ class GeminiChain:
         """
         file = Path(filepath)
         
-        if not file.is_file():
-            file_text = f"[ERROR] 파일 경로를 찾을 수 없습니다.(INPUT PATH: {filepath})"
-        else:
+        try:
             file_text = file.read_text(encoding="utf-8")
+        except:
+            file_text = ""
+            logger.error(f"파일 경로를 찾을 수 없습니다.(INPUT PATH: {filepath})")
 
         return file_text
     
+    def _check_inputs_equal(self, prompt):
+        """프롬프트와의 변수가 매칭되는지 체크하는 메서드"""
+        input_vars = set(self.input_vars)
+        prompt_vars = set(prompt.input_variables)
+        if input_vars != prompt_vars:
+            logger.error(f"input_vars does not match a variable in the prompt\n(input_vars):{input_vars} (prompt_vars):{prompt_vars}")
+
     def _get_prompts(self):
+        """프롬프트 객체 만드는 메서드"""
         # 프롬프트 설정
-        template = self.read_prompt(self.template_path)
+        template = self.read_template(self.template_path)
         prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", template),
@@ -100,9 +118,12 @@ class GeminiChain:
             ]
         )
 
+        self._check_inputs_equal(prompt)
+
         return prompt
-    
-    def _make_chain(self):
+
+    def _create_chain(self):
+        """Chain 만드는 메서드"""
         # 프롬프트 설정
         prompt = self._get_prompts()
 
@@ -118,27 +139,26 @@ class GeminiChain:
         # 체인 만들기
         chain = prompt | model | output_parser
 
-        return chain
+        logger.info("Created a chain")
 
-    def _save_memory(self, input, output):
-            self.memory.save_context(
-            {"inputs": input},
-            {"output": output}
-        )
+        return chain
+    
+    def add_history(self, input, output):
+        self.input_vars["chat_history"].extend(
+        [
+            HumanMessage(content=input),
+            AIMessage(content=output)
+        ]
+    )
 
     async def astream(self, input):
-        self.inputs["input"] = input
+        self.input_vars["input"] = input
 
-        output = ""
-        result = self.chain.astream(self.inputs)
+        result = self.chain.astream(self.input_vars)
         async for token in result:
-            output += token 
-            # 소켓 통신 코드 
-            # 테스트 코드
-            print(token, end="", flush=True)
-        
-        # 메모리에 저장
-        self._save_memory(input, output)
-        
-        return output
+            # 한글자씩 스트리밍
+            for char in token:
+                await asyncio.sleep(0.01)
+                yield char
+
         

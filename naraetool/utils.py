@@ -1,11 +1,12 @@
 import os
 import streamlit as st
 from pathlib import Path 
-from .langchain import check_api_key
+from dotenv import load_dotenv 
 import base64
 
 def setting():
-    check_api_key("GOOGLE_API_KEY")
+    load_dotenv()
+    # check_api_key("GOOGLE_API_KEY")
     read_mdfile("./docs/css.md")
 
 
