@@ -3,7 +3,7 @@ import asyncio
 import requests
 import json
 from pathlib import Path 
-from naraetool.logger import logger
+from naraetool.main_logger import logger
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
