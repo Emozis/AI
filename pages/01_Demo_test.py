@@ -31,93 +31,53 @@ if not key_expander in st.session_state:
 #-------------------------------------------------------------------
 # Header
 #-------------------------------------------------------------------
-
 # 테스트 코드
 import asyncio
 import nest_asyncio
 nest_asyncio.apply()
 
-# result = asyncio.run(main())
-# print(f"RESULT: {result}")
+with st.expander(
+        label=":gear: Settigns", 
+        expanded=st.session_state[key_expander]
+    ):  
+    # Prompt Select Box
+    more_text = "➕ 직접 입력"
+    path = Path("./static/persona")
+    files = {file.stem:file for file in sorted(path.iterdir())}
 
-async def get_response(input):
-    template = "친구처럼 대답해주세요"
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", template),
-            # MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{input}"),
-        ]
+    select = st.selectbox(
+        label="PROMPT",
+        options=list(files.keys()) + [more_text]
     )
-    model = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
-            temperature=0.7
-        )
-    # 출력 파서 설정
-    output_parser = StrOutputParser()
-
-    # 체인 만들기
-    chain = prompt | model | output_parser
-
-    result = chain.astream({"input":input})
-    async for token in result:
-        # 한글자씩 스트리밍
-        for char in token:
-            await asyncio.sleep(0.01)
-            yield char
-
-async def main():
-    container = st.empty()
-    output = ""
-    async for char in get_response("넌 누구야"):
-        output += char
-        container.markdown(output)
-        print(char, end="", flush=True)
-    print()  # 마지막에 줄바꿈
-
-    return output
-
-asyncio.run(main())
-
-
-# with st.expander(
-#         label=":gear: Settigns", 
-#         expanded=st.session_state[key_expander]
-#     ):  
-#     # Prompt Select Box
-#     more_text = "➕ 직접 입력"
-#     path = Path("./static/persona")
-#     files = {file.stem:file for file in sorted(path.iterdir())}
-
-#     select = st.selectbox(
-#         label="PROMPT",
-#         options=list(files.keys()) + [more_text]
-#     )
     
-#     # Print Template
-#     if select == more_text:
-#         persona = st.text_area(
-#             label="TEMPLATE",
-#                 value="",
-#                 height=300
-#         )
-#     else:
-#         with open(files[select], 'r', encoding="utf-8") as txt_file:
-#             persona = st.text_area(
-#                 label="TEMPLATE",
-#                 value=txt_file.read(),
-#                 height=300,
-#                 disabled=True
-#             )
+    # Print Template
+    if select == more_text:
+        persona = st.text_area(
+            label="TEMPLATE",
+                value="",
+                height=300
+        )
+    else:
+        with open(files[select], 'r', encoding="utf-8") as txt_file:
+            persona = st.text_area(
+                label="TEMPLATE",
+                value=txt_file.read(),
+                height=300,
+                disabled=True
+            )
         
-#     # Chat Start Button
-#     start_btn = st.button(
-#         label="CHAT START",
-#         use_container_width=True,
-#         type="primary",
-#         on_click=fold_container,
-#         args=""
-#     )
+    # Chat Start Button
+    start_btn = st.button(
+        label="CHAT START",
+        use_container_width=True,
+        type="primary",
+        on_click=fold_container,
+        args=""
+    )
+
+    if start_btn:
+        # 체인 만들기 
+        
 
 # #-------------------------------------------------------------------
 # # Make Chain
