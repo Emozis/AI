@@ -103,10 +103,9 @@ class Schedule:
         st.session_state["input_data"] = doc
         st.session_state["is_expand"] = True
         st.session_state["is_new"] = False
-        print(doc)
 
     def _edit_button(self, i, category, schedule):
-        _, col = st.columns([0.8,0.2])
+        _, col = st.columns([0.7,0.3])
         col.button(
             label=":lower_left_fountain_pen: EDIT",
             use_container_width=True,

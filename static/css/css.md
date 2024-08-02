@@ -47,4 +47,12 @@ b {
     line-height:30px; 
 }
 
+@media (prefers-color-scheme: dark) {
+  .prj-container {
+        background-color: #edfaff; 
+        color: black; 
+    }
+}
+
+
 </style>
