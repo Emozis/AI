@@ -11,7 +11,7 @@ class Config:
         
 
     def _read_yaml(self, filepath):
-        with open(filepath, 'r') as yaml_file:
+        with open(filepath, 'r', encoding="utf-8") as yaml_file:
             config = yaml.safe_load(yaml_file)
 
         return config

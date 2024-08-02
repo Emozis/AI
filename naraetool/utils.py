@@ -4,7 +4,8 @@ from pathlib import Path
 from dotenv import load_dotenv 
 import base64
 
-def setting():
+def setting(layout="centered"):
+    st.set_page_config(layout=layout)
     load_dotenv()
     # check_api_key("GOOGLE_API_KEY")
     read_mdfile("./static/css/css.md")
@@ -47,3 +48,24 @@ def read_prompt(filepath:str) -> str:
 
     return file_text
 
+
+def vertical_space(size:int):
+    """Create vertical blank spaces
+
+    Args:
+        size (int): height
+    """
+    st.container(height=size, border=False)
+
+def input_text_align(text:str, font=16, align="center"):
+    """Aligns the text with the specified alignment
+    
+    Args:
+        text (str): The text to be aligned
+        type (str, optional): The alignment style for the text. Can be one of the following: 'left', 'center'(default), 'right' 
+    """
+    st.markdown(f"""
+               <div style="text-align:{align}; font-size:{font}px;">
+               {text}
+               </div>
+               """, unsafe_allow_html=True)

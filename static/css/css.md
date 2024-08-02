@@ -35,4 +35,16 @@
 b {
     font-family: 'NanumSquareNeoHeavy';
 }
+
+.prj-container {
+    background-color: #edfaff; 
+    border-radius:10px;
+
+    padding:5px 10px; 
+    margin:10px 0;
+
+    font-size:14px; 
+    line-height:30px; 
+}
+
 </style>
