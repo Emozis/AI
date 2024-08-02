@@ -7,7 +7,7 @@ import base64
 def setting():
     load_dotenv()
     # check_api_key("GOOGLE_API_KEY")
-    read_mdfile("./docs/css.md")
+    read_mdfile("./static/css/css.md")
 
 
 def read_mdfile(filepath:str) -> st.markdown:

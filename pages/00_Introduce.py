@@ -3,5 +3,5 @@ from naraetool.utils import *
 
 setting()
 
-read_mdfile("./docs/introduce.md")
+read_mdfile("./static/docs/introduce.md")
     
