@@ -16,7 +16,8 @@ class JSONEncoder(json.JSONEncoder):
 
 class MongoDB:
     def __init__(self, config):
-        self.save_path = Path(__file__).parents[1] / "data/mongodb_backup.json"
+        # 백업 저장소 설정
+        self.save_path = config["backup_path"]
 
         # 기본 설정값
         host = config["host"]

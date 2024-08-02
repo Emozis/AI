@@ -16,7 +16,7 @@ icon = "💡"
 in_section = true
 
 [[pages]]
-path = "pages/00_Project.py"
+path = "pages/00_Project_test.py"
 name = "프로젝트 진행상황"
 icon = "🔥"
 in_section = true
