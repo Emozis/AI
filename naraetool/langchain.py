@@ -46,13 +46,13 @@ def validate_google_api_key():
 
 
 class Gemini:
-    def __init__(self, input_vars):
+    def __init__(self, input_vars, config):
         self.input_vars = input_vars
         self._transform()
         
-        self.template_path="./static/templates/Demo_test.prompt"
-        self.model_name = "gemini-1.5-flash"
-        self.temperature = 0.7
+        self.template_path = config["template_path"]
+        self.model_name = config["model_name"]
+        self.temperature = config["temperature"]
 
         self.chain = self._create_chain()
 

@@ -33,4 +33,4 @@ class Config:
 
         logger.info(f"There are {len(merge_config)} configs {list(merge_config.keys())}")
 
-config = Config(["persona", "project"])
+config = Config(["persona", "project", "model"])
