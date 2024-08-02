@@ -1,11 +1,19 @@
 import streamlit as st 
 from naraetool.utils import *
-from naraetool.mongodb import mongo 
+from naraetool.mongodb import mongo
 from naraetool.schedule import input_box, Schedule, date2str
 from datetime import datetime
 
 setting(layout="wide")
 
+# DB 컬렉션 연결
+if "mongo" not in st.session_state:
+    mongo.connect_collection("project")
+    st.session_state["mongo"] = mongo
+else:
+    mongo = st.session_state["mongo"]
+
+# 데이터 업데이트
 schedule = Schedule(mongo.documents)
 #-------------------------------------------------------------------
 # Session state

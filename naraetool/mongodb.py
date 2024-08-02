@@ -16,14 +16,13 @@ class JSONEncoder(json.JSONEncoder):
 
 class MongoDB:
     def __init__(self, config):
-        # 백업 저장소 설정
-        self.save_path = config["backup_path"]
+        # 백업 저장소 
+        self.backup_dir = Path(config["backup_dir"])
 
         # 기본 설정값
         host = config["host"]
         # port = config["port"]         # atlas로 관리하여 제외
         db = config.get("db", None)
-        collection = config.get("collection", None)
 
         username = quote_plus(os.getenv(config["userKey"], ""))
         password = quote_plus(os.getenv(config["pwdKey"], ""))
@@ -40,7 +39,6 @@ class MongoDB:
             
             # db, collection 생성
             self.db = self._get_db(db)
-            self.collection = self._get_collection(collection)
             
             # 로거
             logger.info(f"클라이언트 생성 완료")
@@ -56,13 +54,14 @@ class MongoDB:
         
         return db
 
-    def _get_collection(self, collection_name):
-        try:
-            collection = self.db[collection_name]
-        except:
-            logger.error(f"컬렉션 목록을 다시 확인하세요 - {self.collection_list}")
-        
-        return collection
+    def connect_collection(self, collection_name):
+        if collection_name in self.collection_list:
+            # 컬렉션 연결
+            self.collection = self.db[collection_name]
+            # 백업 저장소 설정
+            self.backup_path = self.backup_dir / f"{collection_name}_backup.json"
+        else:
+            logger.error(f"컬렉션 이름이 목록에 존재하지 않습니다 - {self.collection_list}")
 
     @property
     def documents(self):
@@ -71,7 +70,7 @@ class MongoDB:
         return data
     
     def _backup(self):
-        with open(self.save_path, "w", encoding="utf-8") as json_file:
+        with open(self.backup_path, "w", encoding="utf-8") as json_file:
             json.dump(self.documents, json_file, cls=JSONEncoder, ensure_ascii=False, indent=4)
 
     def create(self, document):
@@ -101,6 +100,5 @@ class MongoDB:
         else:
             logger.warning("🚨 Delete failed due to no matching documents")
 
-        
 
 mongo = MongoDB(config.mongodb)
