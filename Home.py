@@ -27,12 +27,12 @@ st.link_button(
     # type="primary"
 )
 
-st.link_button(
-    label=":blue[📋 2024.07.15 회의록]",
-    url=f"{streamlit_url}/%ED%9A%8C%EC%9D%98%EB%A1%9D",
-    use_container_width=True,
-    # type="primary"
-)
+# st.link_button(
+#     label=":blue[📋 2024.07.15 회의록]",
+#     url=f"{streamlit_url}/%ED%9A%8C%EC%9D%98%EB%A1%9D",
+#     use_container_width=True,
+#     # type="primary"
+# )
 
 st.markdown("Total")
 st.link_button(
