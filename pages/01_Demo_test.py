@@ -1,6 +1,9 @@
 import streamlit as st 
 from naraetool.utils import *
 from naraetool.langchain import *
+from naraetool.config import config
+characters = config.characters
+model_config = config.model_info
 
 setting()
 
@@ -15,18 +18,24 @@ from operator import itemgetter
 
 from google.api_core import exceptions
 #-------------------------------------------------------------------
-# Settings
+# Session state
 #-------------------------------------------------------------------
-key_expander = "is_expand"
-key_chain = "demo_chain"
-key_greeting = "demo_greeting"
+if not "is_expand" in st.session_state:
+    st.session_state["is_expand"] = True
 
-def fold_container():
-    st.session_state[key_expander] = False
+if not "chain" in st.session_state:
+    st.session_state["chain"] = None
+else:
+    chain = st.session_state["chain"]
 
-# 상태 초기화
-if not key_expander in st.session_state:
-    st.session_state[key_expander] = True
+def start_click(persona):
+    input_vars = {
+        "persona": persona,
+        "chat_history": [],
+        "input": ""
+    }
+    st.session_state["chain"] = Gemini(input_vars, model_config)
+    st.session_state["is_expand"] = False
 
 #-------------------------------------------------------------------
 # Header
@@ -36,20 +45,28 @@ import asyncio
 import nest_asyncio
 nest_asyncio.apply()
 
+def make_option(characters):
+    option_dict = {}
+    for key, value in characters.items():
+        name = value["name"]
+        option_dict[name] = key
+
+    return option_dict 
+
+option_dict = make_option(characters)
+
 with st.expander(
         label=":gear: Settigns", 
-        expanded=st.session_state[key_expander]
+        expanded=st.session_state["is_expand"]
     ):  
     # Prompt Select Box
     more_text = "➕ 직접 입력"
-    path = Path("./static/persona")
-    files = {file.stem:file for file in sorted(path.iterdir())}
 
     select = st.selectbox(
-        label="PROMPT",
-        options=list(files.keys()) + [more_text]
+        label="PERSONA",
+        options=list(option_dict.keys()) + [more_text]
     )
-    
+    print(select)
     # Print Template
     if select == more_text:
         persona = st.text_area(
@@ -58,7 +75,9 @@ with st.expander(
                 height=300
         )
     else:
-        with open(files[select], 'r', encoding="utf-8") as txt_file:
+        key = option_dict[select]
+        filepath = characters[key]["filepath"]
+        with open(filepath, 'r', encoding="utf-8") as txt_file:
             persona = st.text_area(
                 label="TEMPLATE",
                 value=txt_file.read(),
@@ -71,17 +90,13 @@ with st.expander(
         label="CHAT START",
         use_container_width=True,
         type="primary",
-        on_click=fold_container,
-        args=""
+        on_click=start_click,
+        args=[persona]
     )
 
-    if start_btn:
-        # 체인 만들기 
-        
-
-# #-------------------------------------------------------------------
-# # Make Chain
-# #-------------------------------------------------------------------
+# -------------------------------------------------------------------
+# Make Chain
+# -------------------------------------------------------------------
 # # 채팅을 이어나갈 때
 # if key_chain in st.session_state:
 #     chain = st.session_state[key_chain]
@@ -120,9 +135,9 @@ with st.expander(
 #     # 세션 정보 저장
 #     st.session_state[key_chain] = chain
 #     st.session_state[key_memory] = memory
-# #-------------------------------------------------------------------
-# # Chat Messages
-# #-------------------------------------------------------------------
+#-------------------------------------------------------------------
+# Chat Messages
+#-------------------------------------------------------------------
 # # 첫 채팅을 시작할 때 첫 인사 출력
 # if len(st.session_state[key_history]) == 0:
 #     greeting = "안녕하세요😋"
