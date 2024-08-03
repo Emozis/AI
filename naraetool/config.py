@@ -4,12 +4,10 @@ from pathlib import Path
 from naraetool.main_logger import logger 
 
 class Config:
-    def __init__(self, filenames:List[str]) -> None:
-        self.filenames = filenames
-        self.default_dir = Path(__file__).parents[1] / "config"
+    def __init__(self) -> None:
+        self.default_dir = Path("./config")
         self._set_attributes()
         
-
     def _read_yaml(self, filepath):
         with open(filepath, 'r', encoding="utf-8") as yaml_file:
             config = yaml.safe_load(yaml_file)
@@ -18,8 +16,7 @@ class Config:
     
     def _merge_data(self):
         configs = {}
-        for filename in self.filenames:
-            filepath = self.default_dir / f"{filename}_config.yaml"
+        for filepath in self.default_dir.iterdir():
             config = self._read_yaml(filepath)
 
             configs.update(config)    
@@ -33,4 +30,4 @@ class Config:
 
         logger.info(f"There are {len(merge_config)} configs {list(merge_config.keys())}")
 
-config = Config(["persona", "project", "model"])
+config = Config()

@@ -4,7 +4,7 @@ mongodb:
   pwdKey: "MONGODB_PASSWORD"
   db: "emozis"
   collection: "project"
-  backup_path: "./data/mongodb_backup.json"
+  backup_dir: "./data"
 
 table:
   category:
