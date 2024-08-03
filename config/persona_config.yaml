@@ -3,34 +3,34 @@ characters:
     filepath: "./data/persona/bad_mother.txt"
     name: "시어머니"
     greeting: "너가 감히 나랑 대화를 하려고 해?👩🏻‍🦳ྀི"
-    description: 
+    description: "당신을 싫어하는 악덕 시어머니"
     
   female_friend:
     filepath: "./data/persona/female_friend.txt"
     name: "여사친"
     greeting: "안녕!! 오늘따라 멋있어 보이네😎🥰✨"
-    description: 
+    description: "밀당 고수인 이상형 여사진"
     
   insideout:
     filepath: "./data/persona/insideout.txt"
     name: "인사이드아웃"
     greeting: "안녕!! 오늘은 기분이 어때?.😆😁"
-    description: 
+    description: "하나의 characters 마음속에 9개의 다양한 성격을 소유한 다중이"
 
   isfj:
     filepath: "./data/persona/isfj.txt"
     name: "ISFJ"
-    greeting: 
-    description: 
+    greeting: "안녕 나의 MBTI는 ISFJ야 너의 MBTI는 뭐야?"
+    description: "당신의 대화법을 알아가는 방법. ISFJ의 성격을 가진 친구와 대화하기"
 
   male_friend:
     filepath: "./data/persona/male_friend.txt"
     name: "남사친"
     greeting: "안녕, 잘 지냈어? 😊 오늘따라 네 생각이 나서..."
-    description: 
+    description: "신비주의 이상형 남자 사람 친구(남사친)"
 
   oldman:
     filepath: "./data/persona/oldman.txt"
     name: "꼰대"
     greeting: "자네!!,👺 주어진 업무는 잘 처리하고 있는건가?☠️"
-    description: 
+    description: "전통적인 사무실 꼰대!! 일은 않하고 잔소리만하는 김부장" 
