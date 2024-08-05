@@ -15,7 +15,7 @@ characters:
     filepath: "./data/persona/insideout.txt"
     name: "인사이드아웃"
     greeting: "안녕!! 오늘은 기분이 어때?.😆😁"
-    description: "하나의 characters 마음속에 9개의 다양한 성격을 소유한 다중이"
+    description: "하나의 character 마음속에 9개의 다양한 성격을 소유한 다중이"
 
   isfj:
     filepath: "./data/persona/isfj.txt"
