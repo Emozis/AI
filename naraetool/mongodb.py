@@ -3,9 +3,11 @@ import json
 from pathlib import Path
 from pymongo import MongoClient
 from naraetool.main_logger import logger 
-from naraetool.config import config
+from naraetool.main_config import configs
 from urllib.parse import quote_plus
 from bson import ObjectId
+
+config = configs.mongodb
 
 # 사용자 정의 JSON 인코더 클래스
 class JSONEncoder(json.JSONEncoder):
@@ -15,7 +17,7 @@ class JSONEncoder(json.JSONEncoder):
         return super(JSONEncoder, self).default(obj)
 
 class MongoDB:
-    def __init__(self, config):
+    def __init__(self):
         # 백업 저장소 
         self.backup_dir = Path(config["backup_dir"])
 
@@ -101,4 +103,4 @@ class MongoDB:
             logger.warning("🚨 Delete failed due to no matching documents")
 
 
-mongo = MongoDB(config.mongodb)
+mongo = MongoDB()
