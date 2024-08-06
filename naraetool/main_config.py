@@ -5,7 +5,7 @@ from naraetool.main_logger import logger
 
 class Config:
     def __init__(self) -> None:
-        self.default_dir = Path("./config")
+        self.default_dir = Path(__file__).parents[1] / "config"
         self._set_attributes()
         
     def _read_yaml(self, filepath):
@@ -30,4 +30,5 @@ class Config:
 
         logger.info(f"There are {len(merge_config)} configs {list(merge_config.keys())}")
 
-config = Config()
+
+configs = Config()
