@@ -2,8 +2,12 @@ import os
 import asyncio
 import requests
 import json
+import streamlit as st
 from pathlib import Path 
 from naraetool.main_logger import logger
+from naraetool.main_config import configs
+
+config = configs.model_info
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -43,14 +47,12 @@ def validate_google_api_key():
     
     logger.info("Google API Key validation succeeded.")
 
-
-
 class Gemini:
-    def __init__(self, input_vars, config):
+    def __init__(self, input_vars, template_name):
         self.input_vars = input_vars
         self._transform()
         
-        self.template_path = config["template_path"]
+        self.template_name = template_name
         self.model_name = config["model_name"]
         self.temperature = config["temperature"]
 
@@ -66,7 +68,7 @@ class Gemini:
         for log in chat_history:
             if log["role"] == "user":
                 chat = HumanMessage(log["content"])
-            else:
+            elif log["role"] == "character":
                 chat = AIMessage(log["content"])
             
             chat_messages.append(chat)
@@ -80,7 +82,7 @@ class Gemini:
         self.input_vars["chat_history"] = self.wrap_messages(history)
 
     @staticmethod
-    def read_template(filepath:str) -> str:
+    def read_template(filename:str) -> str:
         """프롬프트 파일을 읽고 텍스트로 반환하는 함수
 
         Args:
@@ -89,13 +91,13 @@ class Gemini:
         Returns:
             str: markdown 파일에서 추출된 텍스트
         """
-        file = Path(filepath)
+        file_path = Path(__file__).parents[1] / f"data/templates/{filename}"
         
         try:
-            file_text = file.read_text(encoding="utf-8")
+            file_text = file_path.read_text(encoding="utf-8")
         except:
             file_text = ""
-            logger.error(f"파일 경로를 찾을 수 없습니다.(INPUT PATH: {filepath})")
+            logger.error(f"파일 경로를 찾을 수 없습니다.(INPUT PATH: {str(file_path)})")
 
         return file_text
     
@@ -109,7 +111,7 @@ class Gemini:
     def _get_prompts(self):
         """프롬프트 객체 만드는 메서드"""
         # 프롬프트 설정
-        template = self.read_template(self.template_path)
+        template = self.read_template(self.template_name)
         prompt = ChatPromptTemplate.from_messages(
             [
                 ("system", template),
@@ -143,22 +145,89 @@ class Gemini:
 
         return chain
     
-    def add_history(self, input, output):
-        self.input_vars["chat_history"].extend(
-        [
-            HumanMessage(content=input),
-            AIMessage(content=output)
-        ]
-    )
+    def _add_history(self, role, content):
+        if role == "character":
+            self.input_vars["chat_history"].extend(
+                [
+                    AIMessage(content=content)
+                ]
+            )
+        elif role == "user":
+            self.input_vars["chat_history"].extend(
+                [
+                    HumanMessage(content=content)
+                ]
+            )
+
+    def stream(self, input):
+        self.input_vars["input"] = input
+
+        result = self.chain.stream(self.input_vars)
+        output = ""
+        for token in result:
+            output += token
+            # 한글자씩 스트리밍
+            for char in token:
+                yield char
+
+        # 히스토리 저장
+        self._add_history(role="user", content=input)
+        self._add_history(role="character", content=output)
+
+        return output
+
+    def stream_streamlit(self, input):
+        self.input_vars["input"] = input
+        container = st.empty()
+
+        result = self.chain.stream(self.input_vars)
+        output = ""
+        for token in result:
+            # 한글자씩 스트리밍
+            for char in token:
+                output += char
+                container.markdown(output)
+
+        # 히스토리 저장
+        self._add_history(role="user", content=input)
+        self._add_history(role="character", content=output)
+        
+        return output
 
     async def astream(self, input):
         self.input_vars["input"] = input
 
         result = self.chain.astream(self.input_vars)
+        output = ""
         async for token in result:
+            output += token 
             # 한글자씩 스트리밍
             for char in token:
                 await asyncio.sleep(0.01)
                 yield char
 
-        
+        # 히스토리 저장
+        self._add_history(role="user", content=input)
+        self._add_history(role="character", content=output)
+
+    async def astream_streamlit(self, input):
+        container = st.empty()
+        self.input_vars["input"] = input
+
+        result = self.chain.astream(self.input_vars)
+        output = ""
+        async for token in result:
+            # 한글자씩 스트리밍
+            for char in token:
+                output += char
+                await asyncio.sleep(0.01)
+                container.markdown(output)
+
+        # 히스토리 저장
+        self._add_history(role="user", content=input)
+        self._add_history(role="character", content=output)
+
+        return output 
+
+
+
