@@ -48,7 +48,7 @@ def st_add_history(role, content):
         st.session_state["chat_history"].append(
             {"role": "user", "content": content}
         )
-
+print(st.session_state["chat_history"])
 #-------------------------------------------------------------------
 # Header
 #-------------------------------------------------------------------
@@ -143,4 +143,5 @@ if st.session_state["chat_start"]:
         with st.chat_message("assistant"):
             output = chain.stream_streamlit(input)
             st_add_history(role="character", content=output)
+            
                 

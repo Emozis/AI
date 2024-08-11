@@ -175,6 +175,7 @@ class Gemini:
         return output
 
     def stream_streamlit(self, input):
+        st.session_state["output"] = ""
         self.input_vars["input"] = input
         container = st.empty()
 
