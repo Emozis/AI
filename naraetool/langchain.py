@@ -3,9 +3,11 @@ import asyncio
 import requests
 import json
 import streamlit as st
+import time
 from pathlib import Path 
 from naraetool.main_logger import logger
 from naraetool.main_config import configs
+from google.api_core import exceptions
 
 config = configs.model_info
 
@@ -145,7 +147,7 @@ class Gemini:
 
         return chain
     
-    def _add_history(self, role, content):
+    def add_history(self, role, content):
         if role == "character":
             self.input_vars["chat_history"].extend(
                 [
@@ -170,29 +172,31 @@ class Gemini:
             for char in token:
                 yield char
 
-        # 히스토리 저장
-        self._add_history(role="user", content=input)
-        self._add_history(role="character", content=output)
-
         return output
 
     def stream_streamlit(self, input):
         self.input_vars["input"] = input
         container = st.empty()
 
-        result = self.chain.stream(self.input_vars)
-        output = ""
-        for token in result:
-            # 한글자씩 스트리밍
-            for char in token:
-                output += char
-                container.markdown(output)
-
-        # 히스토리 저장
-        self._add_history(role="user", content=input)
-        self._add_history(role="character", content=output)
+        retry = 0
+        while retry < 5:
+            try:
+                result = self.chain.stream(self.input_vars)
+                for token in result:
+                    # 한글자씩 스트리밍
+                    for char in token:
+                        st.session_state["output"] += char
+                        time.sleep(0.01)
+                        container.markdown(st.session_state["output"])
+                break
+            except:
+                logger.info(f"{retry}:503ERROR")
+                st.session_state["output"] = ""
+                retry += 1
+                time.sleep(1)
+                pass
         
-        return output
+        return st.session_state["output"]
 
     async def astream(self, input):
         self.input_vars["input"] = input
@@ -206,28 +210,28 @@ class Gemini:
                 await asyncio.sleep(0.01)
                 yield char
 
-        # 히스토리 저장
-        self._add_history(role="user", content=input)
-        self._add_history(role="character", content=output)
-
     async def astream_streamlit(self, input):
         container = st.empty()
         self.input_vars["input"] = input
 
-        result = self.chain.astream(self.input_vars)
-        output = ""
-        async for token in result:
-            # 한글자씩 스트리밍
-            for char in token:
-                output += char
-                await asyncio.sleep(0.01)
-                container.markdown(output)
+        retry = 0
+        while retry < 5:
+            try:
+                async for token in self.chain.astream(self.input_vars):
+                    # 한글자씩 스트리밍
+                    for char in token:
+                        st.session_state["output"] += char
+                        await asyncio.sleep(0.1)
+                        container.markdown(st.session_state["output"])
+                break
+            except Exception as e:
+                print(e)
+                logger.info(f"{retry}:503ERROR")
+                st.session_state["output"] = ""
+                retry += 1
+                await asyncio.sleep(2)
+                pass
 
-        # 히스토리 저장
-        self._add_history(role="user", content=input)
-        self._add_history(role="character", content=output)
-
-        return output 
-
+        return st.session_state["output"]
 
 

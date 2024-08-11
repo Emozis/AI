@@ -8,5 +8,7 @@ session_keys:
     description: None
     greeting: None 
     chain: None 
+    output: ""
+    is_valid: False
     
      
