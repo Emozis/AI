@@ -197,7 +197,6 @@ class Gemini:
                 time.sleep(1)
                 pass
         
-        return st.session_state["output"]
 
     async def astream(self, input):
         self.input_vars["input"] = input

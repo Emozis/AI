@@ -141,7 +141,9 @@ if st.session_state["chat_start"]:
         
         # 답변 출력
         with st.chat_message("assistant"):
-            output = chain.stream_streamlit(input)
-            st_add_history(role="character", content=output)
+            chain.stream_streamlit(input)
+            st_add_history(role="character", content=st.session_state["output"])
+    
+    st.session_state["output"] = ""
             
                 
