@@ -10,6 +10,15 @@ def setting(layout="centered"):
     # check_api_key("GOOGLE_API_KEY")
     read_mdfile("./static/css/css.md")
 
+def init_session(session_keys):
+    for key, value in session_keys.items():
+        # 상태 초기화
+        if key not in st.session_state:
+            st.session_state[key] = value 
+        # page가 바뀌었을 때 상태 초기화
+        elif key == "page" and st.session_state[key] != value:
+            st.session_state = {}
+            st.rerun()
 
 def read_mdfile(filepath:str) -> st.markdown:
     """markdown 파일을 읽고 markdown으로 작성하는 함수
